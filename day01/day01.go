@@ -16,21 +16,26 @@ func main() {
 	seenFrequencies = make(map[int]int)
 	seenFrequencies[currentFrequency] = currentFrequency
 
-	seenFrequencyTwice := parseInput()
-	fmt.Printf("part 1: %d \n", currentFrequency)
-
-	for !seenFrequencyTwice {
-		// loops until a frequency is seen twice
-		seenFrequencyTwice = parseInput()
-	}
-
-}
-
-func parseInput() bool {
 	lines, err := utils.ReadLines("input.txt")
 	if err != nil {
 		log.Fatalf("readLines: %s", err)
 	}
+
+	// Part 1
+	seenFrequencyTwice := parseFrequencies(lines)
+	fmt.Printf("part 1: %d \n", currentFrequency)
+
+	// Part 2
+	for !seenFrequencyTwice {
+		// loops until a frequency is seen twice
+		seenFrequencyTwice = parseFrequencies(lines)
+	}
+
+	fmt.Printf("part 2: %d \n", currentFrequency)
+
+}
+
+func parseFrequencies(lines []string) bool {
 
 	// parse every line of the input
 	for _, line := range lines {
@@ -40,7 +45,6 @@ func parseInput() bool {
 
 		// checks if the frequency has already been seen
 		if _, ok := seenFrequencies[currentFrequency]; ok {
-			fmt.Printf("part 2: %d\n", currentFrequency)
 			return true
 		}
 
