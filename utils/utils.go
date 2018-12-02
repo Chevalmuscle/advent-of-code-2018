@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"log"
 	"os"
+	"time"
 )
 
 // ReadLines reads a whole file into memory
@@ -22,4 +23,11 @@ func ReadLines(path string) []string {
 		lines = append(lines, scanner.Text())
 	}
 	return lines
+}
+
+// TimeTaken prints the time since "t".
+// Should be called like "defer timeTaken(time.Now())"
+func TimeTaken(t time.Time) {
+	elapsed := time.Since(t)
+	log.Printf("took %s\n", elapsed)
 }
