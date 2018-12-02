@@ -2,16 +2,17 @@ package utils
 
 import (
 	"bufio"
+	"log"
 	"os"
 )
 
 // ReadLines reads a whole file into memory
 // and returns a slice of its lines.
 // Comes from https://stackoverflow.com/a/18479916/9823697
-func ReadLines(path string) ([]string, error) {
+func ReadLines(path string) []string {
 	file, err := os.Open(path)
 	if err != nil {
-		return nil, err
+		log.Fatalf("readLines: %s", err)
 	}
 	defer file.Close()
 
@@ -20,5 +21,5 @@ func ReadLines(path string) ([]string, error) {
 	for scanner.Scan() {
 		lines = append(lines, scanner.Text())
 	}
-	return lines, scanner.Err()
+	return lines
 }

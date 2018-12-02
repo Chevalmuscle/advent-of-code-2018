@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"strconv"
 
 	"../utils"
@@ -16,10 +15,7 @@ func main() {
 	seenFrequencies = make(map[int]int)
 	seenFrequencies[currentFrequency] = currentFrequency
 
-	lines, err := utils.ReadLines("input.txt")
-	if err != nil {
-		log.Fatalf("readLines: %s", err)
-	}
+	lines := utils.ReadLines("input.txt")
 
 	// Part 1
 	seenFrequencyTwice := parseFrequencies(lines)
