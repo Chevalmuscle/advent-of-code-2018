@@ -50,15 +50,15 @@ func hashMapWay(ids []string) (string, string) {
 	// checks if the second half is the same
 	for _, id := range ids {
 
-		if _, isSameSecondtHalf := mapSecondHalf[id[idLength/2+1:]]; isSameSecondtHalf {
+		if _, isSameSecondtHalf := mapSecondHalf[id[idLength/2:]]; isSameSecondtHalf {
 			// checks if the rest(first half) of the id has only one mistake
 			if almostEqual(mapSecondHalf[id[idLength/2:]][:idLength/2], id[:idLength/2], mistakesAllowed) {
-				return mapFirstHalf[id[:idLength/2]], id
+				return mapSecondHalf[id[idLength/2:]], id
 			}
 		}
 
 		// the id is not in the map, so we add it
-		mapSecondHalf[id[:idLength/2]] = id
+		mapSecondHalf[id[idLength/2:]] = id
 	}
 
 	// not found
