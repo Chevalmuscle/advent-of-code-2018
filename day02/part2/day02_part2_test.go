@@ -39,7 +39,7 @@ func TestExtractCommonLetters(t *testing.T) {
 	}
 }
 
-func TestsAlmostEqual(t *testing.T) {
+func TestAlmostEqual(t *testing.T) {
 
 	testAlmostEqual(t, "fghij", "fguij", 1, true)
 	testAlmostEqual(t, "aaaa", "aaaa", 2, false)
