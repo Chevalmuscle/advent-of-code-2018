@@ -8,10 +8,15 @@ import (
 	"../utils"
 )
 
+type point struct {
+	x int
+	y int
+}
+
 func countOverlap(claims []string) int {
 	defer utils.TimeTaken(time.Now())
 
-	claimedPositions := make(map[string]bool)
+	claimedPoints := make(map[point]bool)
 	overlapAmount := 0
 
 	for _, line := range claims {
@@ -25,19 +30,18 @@ func countOverlap(claims []string) int {
 		for i := startX; i < startX+width; i++ {
 			for j := startY; j < startY+height; j++ {
 
-				//var position string
-				position := strconv.Itoa(i) + "," + strconv.Itoa(j)
+				position := point{x: i, y: j}
 
-				if _, claimed := claimedPositions[position]; claimed {
+				if _, claimed := claimedPoints[position]; claimed {
 
 					// if the overlap was not already count
-					if claimedPositions[position] {
+					if claimedPoints[position] {
 						overlapAmount++
-						claimedPositions[position] = false
+						claimedPoints[position] = false
 					}
 
 				} else {
-					claimedPositions[position] = true
+					claimedPoints[position] = true
 				}
 			}
 		}
