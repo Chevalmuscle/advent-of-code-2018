@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"time"
 
-	"../utils"
+	"../../utils"
 )
 
 type point struct {
@@ -16,7 +16,10 @@ type point struct {
 func countOverlap(claims []string) int {
 	defer utils.TimeTaken(time.Now())
 
+	// points with a claim on it
 	claimedPoints := make(map[point]bool)
+
+	// number of overlap
 	overlapAmount := 0
 
 	for _, line := range claims {
@@ -27,14 +30,15 @@ func countOverlap(claims []string) int {
 		width, _ := strconv.Atoi(re.FindAllString(line, -1)[3])
 		height, _ := strconv.Atoi(re.FindAllString(line, -1)[4])
 
+		// iterate through the claim's area
 		for i := startX; i < startX+width; i++ {
 			for j := startY; j < startY+height; j++ {
 
 				position := point{x: i, y: j}
 
-				if _, claimed := claimedPoints[position]; claimed {
+				if _, alreadyClaimed := claimedPoints[position]; alreadyClaimed {
 
-					// if the overlap was not already count
+					// to count only one time an overlap
 					if claimedPoints[position] {
 						overlapAmount++
 						claimedPoints[position] = false
@@ -46,5 +50,6 @@ func countOverlap(claims []string) int {
 			}
 		}
 	}
+
 	return overlapAmount
 }
