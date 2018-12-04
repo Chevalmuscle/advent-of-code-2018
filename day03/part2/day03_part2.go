@@ -13,27 +13,26 @@ type point struct {
 	y int
 }
 
-func getOpenClaimID(claims []string) int {
+func getCleanClaimID(claims []string) int {
 	defer utils.TimeTaken(time.Now())
 
 	// points with a claim on it
 	// key: point; value: map of the claim's IDs on that point
 	claimedPoints := make(map[point]map[int]bool)
 
-	// map of all the overlapping claims
-	overlappingClaims := make(map[int]bool)
-
-	// used to save biggest claim ID
-	currentID := 0
+	// map of all the clean claims
+	cleanClaims := make(map[int]bool)
 
 	for _, line := range claims {
 		re := regexp.MustCompile("([0-9]+)")
 
-		currentID, _ = strconv.Atoi(re.FindAllString(line, -1)[0])
+		currentID, _ := strconv.Atoi(re.FindAllString(line, -1)[0])
 		startX, _ := strconv.Atoi(re.FindAllString(line, -1)[1])
 		startY, _ := strconv.Atoi(re.FindAllString(line, -1)[2])
 		width, _ := strconv.Atoi(re.FindAllString(line, -1)[3])
 		height, _ := strconv.Atoi(re.FindAllString(line, -1)[4])
+
+		cleanClaims[currentID] = true
 
 		// iterate through the claim's area
 		for i := startX; i < startX+width; i++ {
@@ -48,26 +47,25 @@ func getOpenClaimID(claims []string) int {
 
 					// adds all the claims of that point in the overlapping claims's map
 					for k := range claimedPoints[position] {
-						overlappingClaims[k] = true
+						delete(cleanClaims, k)
 					}
 
 				} else {
 					// adds the claim's ID on the point
 					claimedPoints[position] = map[int]bool{currentID: true}
 				}
-
 			}
 		}
 	}
 
-	// calculates the missing claim ID
-	sumOverlappedIDs := 0
-	for overlapID := range overlappingClaims {
-		sumOverlappedIDs += overlapID
+	if len(cleanClaims) == 1 {
+		// returns the only claim that is not overlapping
+		for id := range cleanClaims {
+			return id
+		}
 	}
-	return getMissingNumber(currentID, sumOverlappedIDs)
-}
 
-func getMissingNumber(n int, actualSum int) int {
-	return ((n * (n + 1)) / 2) - actualSum
+	// no unique clean claim
+	return -1
+
 }
