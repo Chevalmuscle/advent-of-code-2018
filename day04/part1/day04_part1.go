@@ -24,13 +24,21 @@ var wakesEvent = "wakes"
 var fallsAsleepEvent = "asleep"
 var beginShiftEvent = "#"
 
-func guardStrategy1(records []string) int {
+type strategy2 struct {
+	guard  string
+	minute int
+	time   int
+}
+
+func guardForSneaking(records []string) (int, int) {
 	defer utils.TimeTaken(time.Now())
 
 	var sortedDates = make([]date, len(records))
 	var events = make(map[date]string)
 	var guards = make(map[string]map[int]int)
 	var sleepTimeGuards = make(map[string]int)
+
+	var strategy2Guard = strategy2{guard: "#-1", minute: -1, time: -1}
 
 	for i, line := range records {
 		var date = getDate(line)
@@ -67,6 +75,11 @@ func guardStrategy1(records []string) int {
 				sleepTimeGuards[currentGuardID] += currentDate.minutesSince(sleepStartTime)
 				for minute := sleepStartTime.Min; minute < currentDate.Min; minute++ {
 					guards[currentGuardID][minute]++
+
+					if guards[currentGuardID][minute] > strategy2Guard.time {
+						strategy2Guard = strategy2{guard: currentGuardID, minute: minute, time: guards[currentGuardID][minute]}
+					}
+					//strategy2Guard
 				}
 
 				if sleepTimeGuards[currentGuardID] > sleepTimeGuards[sleepiestGuard] {
@@ -76,9 +89,13 @@ func guardStrategy1(records []string) int {
 		}
 	}
 
-	test := getKeyWithBiggerValue(guards[sleepiestGuard])
-	test2, _ := strconv.Atoi(strings.Replace(sleepiestGuard, "#", "", -1))
-	return test2 * test
+	strategy1GuardID, _ := strconv.Atoi(strings.Replace(sleepiestGuard, "#", "", -1))
+	strategy1Minute := getKeyWithBiggerValue(guards[sleepiestGuard])
+
+	strategy2GuardID, _ := strconv.Atoi(strings.Replace(strategy2Guard.guard, "#", "", -1))
+	strategy2Minute := strategy2Guard.minute
+
+	return (strategy1GuardID * strategy1Minute), (strategy2GuardID * strategy2Minute)
 }
 
 // has to change (cannot handle negative values)
