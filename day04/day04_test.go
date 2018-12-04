@@ -3,17 +3,14 @@ package day04part1
 import (
 	"testing"
 
-	"../../utils"
-	//"../../utils"
+	"../utils"
 )
 
-//"../../utils"
-
 func TestGuardForSneaking(t *testing.T) {
-	input1 := utils.ReadLines("../testInput.txt")
+	input1 := utils.ReadLines("testInput.txt")
 	testGuardForSneaking(t, input1, 240, 4455)
 
-	input2 := utils.ReadLines("../input.txt")
+	input2 := utils.ReadLines("input.txt")
 	testGuardForSneaking(t, input2, 63509, 47910)
 }
 func TestGetDate(t *testing.T) {

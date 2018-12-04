@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"../../utils"
+	"../utils"
 )
 
 type date struct {
