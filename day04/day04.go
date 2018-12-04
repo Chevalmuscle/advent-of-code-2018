@@ -20,69 +20,66 @@ type date struct {
 	Min   int
 }
 
+type strategy2 struct {
+	guard                string
+	minute               int
+	timeSleepOnTheMinute int
+}
+
 var wakesEvent = "wakes"
 var fallsAsleepEvent = "asleep"
 var beginShiftEvent = "#"
 
-type strategy2 struct {
-	guard  string
-	minute int
-	time   int
-}
-
-func guardForSneaking(records []string) (int, int) {
+func guardForSneaking(unsortedRecords []string) (int, int) {
 	defer utils.TimeTaken(time.Now())
 
-	var sortedDates = make([]date, len(records))
-	var events = make(map[date]string)
-	var guards = make(map[string]map[int]int)
-	var sleepTimeGuards = make(map[string]int)
+	var sortedRecords = make([]date, len(unsortedRecords))
+	var eventsMap = make(map[date]string)
+	var guardsWorkHours = make(map[string]map[int]int) // map[guardID]map[hour][timesWorkedAtThatHour]
+	var guardsSleepTime = make(map[string]int)
 
-	var strategy2Guard = strategy2{guard: "#-1", minute: -1, time: -1}
+	var strategy2Guard = strategy2{guard: "#-1", minute: -1, timeSleepOnTheMinute: -1}
 
-	for i, line := range records {
+	for i, line := range unsortedRecords {
 		var date = getDate(line)
-		sortedDates[i] = date
+		sortedRecords[i] = date
 		var event = getEvent(line)
-		events[date] = event
+		eventsMap[date] = event
 	}
 
-	sort.SliceStable(sortedDates, func(i, j int) bool {
-		return sortedDates[i].compareTo(sortedDates[j]) == -1
+	sort.SliceStable(sortedRecords, func(i, j int) bool {
+		return sortedRecords[i].compareTo(sortedRecords[j]) == -1
 	})
 
-	var currentGuardID string //= events[sortedDates[0]]
-	var sleepStartTime = sortedDates[0]
-	var sleepiestGuard = events[sleepStartTime]
+	var currentGuardID string //= eventsMap[sortedRecords[0]]
+	var sleepStartTime = sortedRecords[0]
+	var sleepiestGuard = eventsMap[sleepStartTime]
 
-	for _, currentDate := range sortedDates {
-		if strings.ContainsAny(events[currentDate], beginShiftEvent) {
-			currentGuardID = events[currentDate]
+	for _, currentDate := range sortedRecords {
+
+		if strings.ContainsAny(eventsMap[currentDate], beginShiftEvent) {
+			// a new guard begins it's shift
+			currentGuardID = eventsMap[currentDate]
 		} else {
-			if _, knownGuard := guards[currentGuardID]; !knownGuard {
-				guards[currentGuardID] = make(map[int]int)
+			if _, knownGuard := guardsWorkHours[currentGuardID]; !knownGuard {
+				guardsWorkHours[currentGuardID] = make(map[int]int)
 			}
 
-			if events[currentDate] == fallsAsleepEvent {
-
-				if currentDate.Hour < 0 { //doesnt count before midnight
-					currentDate.Hour = 0
-					currentDate.Min = 0
-				}
-
+			if eventsMap[currentDate] == fallsAsleepEvent {
 				sleepStartTime = currentDate
-			} else if events[currentDate] == wakesEvent {
-				sleepTimeGuards[currentGuardID] += currentDate.minutesSince(sleepStartTime)
-				for minute := sleepStartTime.Min; minute < currentDate.Min; minute++ {
-					guards[currentGuardID][minute]++
 
-					if guards[currentGuardID][minute] > strategy2Guard.time {
-						strategy2Guard = strategy2{guard: currentGuardID, minute: minute, time: guards[currentGuardID][minute]}
+			} else if eventsMap[currentDate] == wakesEvent {
+				guardsSleepTime[currentGuardID] += currentDate.minutesSince(sleepStartTime)
+
+				for minute := sleepStartTime.Min; minute < currentDate.Min; minute++ {
+					guardsWorkHours[currentGuardID][minute]++
+
+					if guardsWorkHours[currentGuardID][minute] > strategy2Guard.timeSleepOnTheMinute {
+						strategy2Guard = strategy2{guard: currentGuardID, minute: minute, timeSleepOnTheMinute: guardsWorkHours[currentGuardID][minute]}
 					}
-					//strategy2Guard
 				}
 
-				if sleepTimeGuards[currentGuardID] > sleepTimeGuards[sleepiestGuard] {
+				if guardsSleepTime[currentGuardID] > guardsSleepTime[sleepiestGuard] {
 					sleepiestGuard = currentGuardID
 				}
 			}
@@ -90,7 +87,7 @@ func guardForSneaking(records []string) (int, int) {
 	}
 
 	strategy1GuardID, _ := strconv.Atoi(strings.Replace(sleepiestGuard, "#", "", -1))
-	strategy1Minute := getKeyWithBiggerValue(guards[sleepiestGuard])
+	strategy1Minute := getKeyWithBiggerValue(guardsWorkHours[sleepiestGuard])
 
 	strategy2GuardID, _ := strconv.Atoi(strings.Replace(strategy2Guard.guard, "#", "", -1))
 	strategy2Minute := strategy2Guard.minute
