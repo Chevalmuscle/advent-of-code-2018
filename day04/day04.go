@@ -10,8 +10,8 @@ import (
 	"../utils"
 )
 
-type strategy2 struct {
-	guard                int
+type Guard struct {
+	id                   int
 	minute               int
 	timeSleepOnTheMinute int
 }
@@ -27,7 +27,7 @@ func guardForSneaking(records []string) (int, int) {
 	sort.Strings(records)
 
 	var guardsSleepMinutes = make(map[int]sleepTimes)
-	var strategy2Guard = strategy2{guard: -1, minute: -1, timeSleepOnTheMinute: -1}
+	var mostConsistentGuard = Guard{id: -1, minute: -1, timeSleepOnTheMinute: -1}
 
 	var currentGuardID int
 	var sleepStartMinute int
@@ -40,8 +40,9 @@ func guardForSneaking(records []string) (int, int) {
 			currentGuardID = getGuardID(record)
 		} else {
 			if _, knownGuard := guardsSleepMinutes[currentGuardID]; !knownGuard {
-				guardsSleepMinutes[currentGuardID] = sleepTimes{total: guardsSleepMinutes[currentGuardID].total, byMinute: make(map[int]int)}
+				guardsSleepMinutes[currentGuardID] = sleepTimes{total: 0, byMinute: make(map[int]int)}
 			}
+			var currentGuard = guardsSleepMinutes[currentGuardID]
 
 			if strings.Contains(record, "falls asleep") {
 				sleepStartMinute = currentMinute
@@ -49,17 +50,18 @@ func guardForSneaking(records []string) (int, int) {
 			} else if strings.Contains(record, "wakes up") {
 
 				for minute := sleepStartMinute; minute < currentMinute; minute++ {
+					// because it can't be pass by ref..
 					guardsSleepMinutes[currentGuardID] = sleepTimes{total: guardsSleepMinutes[currentGuardID].total + 1, byMinute: guardsSleepMinutes[currentGuardID].byMinute}
-					guardsSleepMinutes[currentGuardID].byMinute[minute]++
+					currentGuard.byMinute[minute]++
 
-					if guardsSleepMinutes[currentGuardID].byMinute[minute] > strategy2Guard.timeSleepOnTheMinute {
-						strategy2Guard = strategy2{
-							guard:                currentGuardID,
+					if currentGuard.byMinute[minute] > mostConsistentGuard.timeSleepOnTheMinute {
+						mostConsistentGuard = Guard{
+							id:                   currentGuardID,
 							minute:               minute,
-							timeSleepOnTheMinute: guardsSleepMinutes[currentGuardID].byMinute[minute]}
+							timeSleepOnTheMinute: currentGuard.byMinute[minute]}
 					}
 				}
-				if guardsSleepMinutes[currentGuardID].total > guardsSleepMinutes[sleepiestGuard].total {
+				if currentGuard.total > guardsSleepMinutes[sleepiestGuard].total {
 					sleepiestGuard = currentGuardID
 				}
 			}
@@ -67,9 +69,9 @@ func guardForSneaking(records []string) (int, int) {
 	}
 
 	strategy1Minute := getKeyWithBiggerValue(guardsSleepMinutes[sleepiestGuard].byMinute)
-	strategy2Minute := strategy2Guard.minute
+	strategy2Minute := mostConsistentGuard.minute
 
-	return (sleepiestGuard * strategy1Minute), (strategy2Guard.guard * strategy2Minute)
+	return (sleepiestGuard * strategy1Minute), (mostConsistentGuard.id * strategy2Minute)
 }
 
 func getMinute(record string) string {
