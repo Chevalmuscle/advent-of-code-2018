@@ -10,7 +10,7 @@ import (
 	"../utils"
 )
 
-type Guard struct {
+type guard struct {
 	id                   int
 	minute               int
 	timeSleepOnTheMinute int
@@ -27,7 +27,7 @@ func guardForSneaking(records []string) (int, int) {
 	sort.Strings(records)
 
 	var guardsSleepMinutes = make(map[int]sleepTimes)
-	var mostConsistentGuard = Guard{id: -1, minute: -1, timeSleepOnTheMinute: -1}
+	var mostConsistentGuard = guard{id: -1, minute: -1, timeSleepOnTheMinute: -1}
 
 	var currentGuardID int
 	var sleepStartMinute int
@@ -55,7 +55,7 @@ func guardForSneaking(records []string) (int, int) {
 					currentGuard.byMinute[minute]++
 
 					if currentGuard.byMinute[minute] > mostConsistentGuard.timeSleepOnTheMinute {
-						mostConsistentGuard = Guard{
+						mostConsistentGuard = guard{
 							id:                   currentGuardID,
 							minute:               minute,
 							timeSleepOnTheMinute: currentGuard.byMinute[minute]}
