@@ -29,7 +29,7 @@ func getNeutralPolymerLength(polymer string) (int, int) {
 			lowestLength = currentLength
 		}
 	}
-	return lengthInitialPolymer, lowestLength
+  return lengthInitialPolymer, lowestLength
 }
 
 func recursiveGetNeutralPolymer(units []rune) []rune {
