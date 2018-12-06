@@ -9,27 +9,21 @@ import (
 )
 
 var wg = sync.WaitGroup{}
+var minPolymerLengthforGoroutine int
 
 func getNeutralPolymerLength(polymer string) (int, int) {
 	defer utils.TimeTaken(time.Now())
 
+	minPolymerLengthforGoroutine = len(polymer)/8 - 1
 	var units = []rune(polymer)
 
-	var channel1 = make(chan []rune, 1)
-	var channel2 = make(chan []rune, 1)
-	wg.Add(2)
-	var firstHalf = units[:len(units)/2]
-	var secondHalf = units[len(units)/2:]
-	go routineGetNeutralPolymer(channel1, firstHalf)
-	go routineGetNeutralPolymer(channel2, secondHalf)
-
-	wg.Wait()
-	var firstHalfNeutral = <-channel1
-	var secondHalfNeutral = <-channel2
-	var mergedPolymer = append(firstHalfNeutral, secondHalfNeutral...)
-	var neutralPolymer = getNeutralPolymer(mergedPolymer)
-
 	// part1
+	var channel = make(chan []rune, 1)
+	wg.Add(1)
+	go routineRecursiveGetNeutralPolymer(channel, units)
+	wg.Wait()
+	var neutralPolymer = <-channel
+
 	var lengthInitialNeutralPolymer = len(neutralPolymer)
 
 	//part 2
@@ -38,21 +32,13 @@ func getNeutralPolymerLength(polymer string) (int, int) {
 
 	for lowerCaseUnit, upperCaseUnit := range uniqueUnits {
 
-		var polymerWithoutAUnit = strings.Replace(polymer, string(lowerCaseUnit), "", -1)
-		polymerWithoutAUnit = strings.Replace(polymerWithoutAUnit, string(upperCaseUnit), "", -1)
+		var optimizedPolymer = strings.Replace(polymer, string(lowerCaseUnit), "", -1)
+		optimizedPolymer = strings.Replace(optimizedPolymer, string(upperCaseUnit), "", -1)
 
-		wg.Add(2)
-
-		var firstHalf = []rune(polymerWithoutAUnit)[:len(polymerWithoutAUnit)/2]
-		var secondHalf = []rune(polymerWithoutAUnit)[len(polymerWithoutAUnit)/2:]
-		go routineGetNeutralPolymer(channel1, firstHalf)
-		go routineGetNeutralPolymer(channel2, secondHalf)
-
+		wg.Add(1)
+		go routineRecursiveGetNeutralPolymer(channel, []rune(optimizedPolymer))
 		wg.Wait()
-		var firstHalfNeutral = <-channel1
-		var secondHalfNeutral = <-channel2
-		var mergedPolymer = append(firstHalfNeutral, secondHalfNeutral...)
-		var neutralPolymer = getNeutralPolymer(mergedPolymer)
+		var neutralPolymer = <-channel
 
 		var currentLength = len(neutralPolymer)
 
@@ -63,8 +49,29 @@ func getNeutralPolymerLength(polymer string) (int, int) {
 	return lengthInitialNeutralPolymer, lowestLength
 }
 
-func routineGetNeutralPolymer(ch chan<- []rune, units []rune) {
-	ch <- recursiveGetNeutralPolymer(units)
+func routineRecursiveGetNeutralPolymer(ch chan<- []rune, units []rune) {
+	if len(units) > minPolymerLengthforGoroutine && len(units) > 1 {
+		var channel1 = make(chan []rune, 1)
+		var channel2 = make(chan []rune, 1)
+		wg.Add(2)
+
+		var firstHalf = units[:len(units)/2]
+		go routineRecursiveGetNeutralPolymer(channel1, firstHalf)
+
+		var secondHalf = units[len(units)/2:]
+		go routineRecursiveGetNeutralPolymer(channel2, secondHalf)
+
+		//wg.Wait()
+		var firstHalfNeutral = <-channel1
+		var secondHalfNeutral = <-channel2
+		var mergedPolymer = append(firstHalfNeutral, secondHalfNeutral...)
+		var neutralPolymer = getNeutralPolymer(mergedPolymer)
+
+		ch <- neutralPolymer
+
+	} else {
+		ch <- recursiveGetNeutralPolymer(units)
+	}
 	wg.Done()
 }
 
