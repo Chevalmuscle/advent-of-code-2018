@@ -15,42 +15,56 @@ func getNeutralPolymerLength(polymer string) (int, int) {
 
 	var units = []rune(polymer)
 
-	var ch = make(chan []rune, 20)
+	var channel1 = make(chan []rune, 1)
+	var channel2 = make(chan []rune, 1)
 	wg.Add(2)
 	var firstHalf = units[:len(units)/2]
 	var secondHalf = units[len(units)/2:]
-	go solve(ch, firstHalf)
-	go solve(ch, secondHalf)
+	go routineGetNeutralPolymer(channel1, firstHalf)
+	go routineGetNeutralPolymer(channel2, secondHalf)
 
 	wg.Wait()
-	var secondHalfNeutral = <-ch
-	var firstHalfNeutral = <-ch
+	var firstHalfNeutral = <-channel1
+	var secondHalfNeutral = <-channel2
 	var mergedPolymer = append(firstHalfNeutral, secondHalfNeutral...)
 	var neutralPolymer = getNeutralPolymer(mergedPolymer)
 
 	// part1
-	var lengthInitialPolymer = len(neutralPolymer)
+	var lengthInitialNeutralPolymer = len(neutralPolymer)
 
 	//part 2
 	var uniqueUnits = getUniqueRunes(units)
-	var lowestLength = lengthInitialPolymer
+	var lowestLength = lengthInitialNeutralPolymer
 
 	for lowerCaseUnit, upperCaseUnit := range uniqueUnits {
+
 		var polymerWithoutAUnit = strings.Replace(polymer, string(lowerCaseUnit), "", -1)
 		polymerWithoutAUnit = strings.Replace(polymerWithoutAUnit, string(upperCaseUnit), "", -1)
 
-		var currentLength = len(recursiveGetNeutralPolymer([]rune(polymerWithoutAUnit)))
+		wg.Add(2)
+
+		var firstHalf = []rune(polymerWithoutAUnit)[:len(polymerWithoutAUnit)/2]
+		var secondHalf = []rune(polymerWithoutAUnit)[len(polymerWithoutAUnit)/2:]
+		go routineGetNeutralPolymer(channel1, firstHalf)
+		go routineGetNeutralPolymer(channel2, secondHalf)
+
+		wg.Wait()
+		var firstHalfNeutral = <-channel1
+		var secondHalfNeutral = <-channel2
+		var mergedPolymer = append(firstHalfNeutral, secondHalfNeutral...)
+		var neutralPolymer = getNeutralPolymer(mergedPolymer)
+
+		var currentLength = len(neutralPolymer)
 
 		if currentLength < lowestLength {
 			lowestLength = currentLength
 		}
 	}
-	return lengthInitialPolymer, lowestLength
+	return lengthInitialNeutralPolymer, lowestLength
 }
 
-func solve(ch chan<- []rune, units []rune) {
-	allo := recursiveGetNeutralPolymer(units)
-	ch <- allo
+func routineGetNeutralPolymer(ch chan<- []rune, units []rune) {
+	ch <- recursiveGetNeutralPolymer(units)
 	wg.Done()
 }
 
