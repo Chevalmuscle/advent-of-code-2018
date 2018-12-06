@@ -7,26 +7,43 @@ import (
 	"../utils"
 )
 
-func getNeutralPolymer(polymer string) (int, int) {
+func getNeutralPolymerLength(polymer string) (int, int) {
 	defer utils.TimeTaken(time.Now())
 
 	var units = []rune(polymer)
-	var lowestLength = 99999999999
-	var part1 = getLengthOfNeutralPolymer(units)
-	var possibleUnits = getUniqueRunes(units)
 
-	for lowerCase, upperCase := range possibleUnits {
-		var tmp = strings.Replace(polymer, string(lowerCase), "", -1)
-		tmp = strings.Replace(tmp, string(upperCase), "", -1)
+	// part1
+	var lengthInitialPolymer = len(recursiveGetNeutralPolymer(units))
 
-		var currentLength = getLengthOfNeutralPolymer([]rune(tmp))
+	//part 2
+	var uniqueUnits = getUniqueRunes(units)
+	var lowestLength = lengthInitialPolymer
+
+	for lowerCaseUnit, upperCaseUnit := range uniqueUnits {
+		var polymerWithoutAUnit = strings.Replace(polymer, string(lowerCaseUnit), "", -1)
+		polymerWithoutAUnit = strings.Replace(polymerWithoutAUnit, string(upperCaseUnit), "", -1)
+
+		var currentLength = len(recursiveGetNeutralPolymer([]rune(polymerWithoutAUnit)))
 
 		if currentLength < lowestLength {
 			lowestLength = currentLength
 		}
 	}
+	return lengthInitialPolymer, lowestLength
+}
 
-	return part1, lowestLength
+func recursiveGetNeutralPolymer(units []rune) []rune {
+	if len(units) < 2 {
+		return units
+	}
+	var firstHalf = units[:len(units)/2]
+	var neutralPolymer1 = recursiveGetNeutralPolymer(firstHalf)
+
+	var secondHalf = units[len(units)/2:]
+	var neutralPolymer2 = recursiveGetNeutralPolymer(secondHalf)
+
+	var mergedPolymer = append(neutralPolymer1, neutralPolymer2...)
+	return getNeutralPolymer(mergedPolymer)
 }
 
 // returns a map with the runes in the array
@@ -42,7 +59,6 @@ func getUniqueRunes(runes []rune) map[rune]rune {
 		}
 	}
 	return seenRunes
-
 }
 
 // difference of 32 between lower and upper case
@@ -50,7 +66,7 @@ func isReacting(unit1 rune, unit2 rune) bool {
 	return (unit1-unit2) == 32 || (unit1-unit2) == -32
 }
 
-func getLengthOfNeutralPolymer(units []rune) int {
+func getNeutralPolymer(units []rune) []rune {
 	for i := 1; i < len(units); i++ {
 		if isReacting(units[i], units[i-1]) {
 			units = append(units[:i], units[i+1:]...)
@@ -61,5 +77,5 @@ func getLengthOfNeutralPolymer(units []rune) int {
 			}
 		}
 	}
-	return len(units)
+	return units
 }

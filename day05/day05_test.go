@@ -36,7 +36,7 @@ func testIsReacting(t *testing.T, input1 rune, input2 rune, expected bool) {
 }
 
 func testNeutralPolymer(t *testing.T, input string, expected1 int, expected2 int) {
-	var output1, output2 = getNeutralPolymer(input)
+	var output1, output2 = getNeutralPolymerLength(input)
 
 	if output1 != expected1 {
 		t.Errorf("Part 1 NeutralPolymer was incorrect, got: %d, want: %d.", output1, expected1)
