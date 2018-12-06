@@ -2,18 +2,34 @@ package day05
 
 import (
 	"strings"
+	"sync"
 	"time"
 
 	"../utils"
 )
+
+var wg = sync.WaitGroup{}
 
 func getNeutralPolymerLength(polymer string) (int, int) {
 	defer utils.TimeTaken(time.Now())
 
 	var units = []rune(polymer)
 
+	var ch = make(chan []rune, 20)
+	wg.Add(2)
+	var firstHalf = units[:len(units)/2]
+	var secondHalf = units[len(units)/2:]
+	go solve(ch, firstHalf)
+	go solve(ch, secondHalf)
+
+	wg.Wait()
+	var secondHalfNeutral = <-ch
+	var firstHalfNeutral = <-ch
+	var mergedPolymer = append(firstHalfNeutral, secondHalfNeutral...)
+	var neutralPolymer = getNeutralPolymer(mergedPolymer)
+
 	// part1
-	var lengthInitialPolymer = len(recursiveGetNeutralPolymer(units))
+	var lengthInitialPolymer = len(neutralPolymer)
 
 	//part 2
 	var uniqueUnits = getUniqueRunes(units)
@@ -29,7 +45,13 @@ func getNeutralPolymerLength(polymer string) (int, int) {
 			lowestLength = currentLength
 		}
 	}
-  return lengthInitialPolymer, lowestLength
+	return lengthInitialPolymer, lowestLength
+}
+
+func solve(ch chan<- []rune, units []rune) {
+	allo := recursiveGetNeutralPolymer(units)
+	ch <- allo
+	wg.Done()
 }
 
 func recursiveGetNeutralPolymer(units []rune) []rune {
