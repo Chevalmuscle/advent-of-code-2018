@@ -15,8 +15,28 @@ func TestNeutralPolymer(t *testing.T) {
 
 }
 
+func TestIsReacting(t *testing.T) {
+	testIsReacting(t, 65, 97, true)
+	testIsReacting(t, 122, 90, true)
+	testIsReacting(t, 103, 103, false)
+	testIsReacting(t, 72, 72, false)
+	testIsReacting(t, 118, 111, false)
+	testIsReacting(t, 99, 80, false)
+	testIsReacting(t, 81, 119, false)
+	testIsReacting(t, 82, 84, false)
+}
+
+func testIsReacting(t *testing.T, input1 rune, input2 rune, expected bool) {
+
+	var output = isReacting(input1, input2)
+
+	if output != expected {
+		t.Errorf("isReacting was incorrect, got: %t, want: %t.", output, expected)
+	}
+}
+
 func testNeutralPolymer(t *testing.T, input string, expected1 int, expected2 int) {
-	output1, output2 := getNeutralPolymer(input)
+	var output1, output2 = getNeutralPolymerLength(input)
 
 	if output1 != expected1 {
 		t.Errorf("Part 1 NeutralPolymer was incorrect, got: %d, want: %d.", output1, expected1)
