@@ -50,21 +50,8 @@ func sizeLargestArea(inputSafePoints []string, maxSummedDistances int) int {
 	}
 
 	return areaSize
-
 }
 
-/*
-func (pv *pointValue) increaseAreaSize() {
-	pv.areaSize++
-}
-
-func (pv *pointValue) setIsValid(isValid bool) {
-	pv.isValid = isValid
-}*/
-
-func (p *point) isBorder() bool {
-	return p.x == 0 || p.y == 0 || p.x == biggestX || p.y == biggestY
-}
 func manhattanDistance(p1 point, p2 point) int {
 	return int(math.Abs(float64(p1.x-p2.x)) + math.Abs(float64(p1.y-p2.y)))
 }
