@@ -1,16 +1,16 @@
-package day06
+package day06part1
 
 import (
 	"testing"
 
-	"../utils"
+	"../../utils"
 )
 
 func TestSizeLargestArea(t *testing.T) {
-	input1 := utils.ReadLines("testInput.txt")
+	input1 := utils.ReadLines("../testInput.txt")
 	testSizeLargestArea(t, input1, 17)
 
-	input2 := utils.ReadLines("input.txt")
+	input2 := utils.ReadLines("../input.txt")
 	testSizeLargestArea(t, input2, 3569)
 }
 

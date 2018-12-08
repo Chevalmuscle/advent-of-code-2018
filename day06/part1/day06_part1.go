@@ -1,4 +1,4 @@
-package day06
+package day06part1
 
 import (
 	"math"
@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"../utils"
+	"../../utils"
 )
 
 type point struct {
