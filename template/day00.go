@@ -1,10 +1,10 @@
-package templatepart2
+package templateday
 
 import (
 	"strconv"
 	"time"
 
-	"../../utils"
+	"../utils"
 )
 
 func sum(numbers []string) int {

@@ -1,9 +1,9 @@
-package templatepart1
+package templateday
 
 import (
 	"testing"
 
-	"../../utils"
+	"../utils"
 )
 
 func TestSum(t *testing.T) {
@@ -11,7 +11,7 @@ func TestSum(t *testing.T) {
 	input1 := []string{"5", "30"}
 	testSum(t, input1, 35)
 
-	input2 := utils.ReadLines("../input.txt")
+	input2 := utils.ReadLines("input.txt")
 	testSum(t, input2, 8)
 
 }
