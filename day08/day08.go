@@ -8,7 +8,7 @@ import (
 	"../utils"
 )
 
-func sumMetadata(input string) (int, int) {
+func memoryManeuver(input string) (int, int) {
 	defer utils.TimeTaken(time.Now())
 
 	var numbersString = strings.Split(input, " ")
@@ -17,64 +17,38 @@ func sumMetadata(input string) (int, int) {
 		numbers[i], _ = strconv.Atoi(number)
 	}
 
-	sumPart1, _ := recursivePart1(numbers)
-	sumPart2, _ := recursivePart2(numbers)
+	sumPart1, sumPart2, _ := parseTree(numbers)
 
 	return sumPart1, sumPart2
 }
 
-func recursivePart2(numbers []int) (int, int) {
+func parseTree(numbers []int) (int, int, int) {
 	var numberOfChild = numbers[0]
 	var numberOfMeta = numbers[1]
-
 	var valuesOfChild = make(map[int]int)
-	var index = 2
-	var rest = numbers[index:]
-	var sum = 0
+
+	var startIndex = 2
+	var rest = numbers[startIndex:]
+	var sumPart1 = 0
+	var sumPart2 = 0
 
 	for i := 0; i < numberOfChild; i++ {
-		sumTmp, indexTmp := recursivePart2(rest)
-		valuesOfChild[i+1] = sumTmp
-		//sum += sumTmp
-		index += indexTmp
-		rest = numbers[index:]
+		sumTmp1, sumTmp2, indexTmp := parseTree(rest)
+		valuesOfChild[i+1] = sumTmp2
+		sumPart1 += sumTmp1
+		startIndex += indexTmp
+		rest = numbers[startIndex:]
 	}
 
-	var i = index
-	for i < index+numberOfMeta {
+	for i := startIndex; i < startIndex+numberOfMeta; i++ {
 		var metadata = numbers[i]
-		//if _, isChild := valuesOfChild[metadata]; isChild {
 		if numberOfChild == 0 {
-			sum += metadata
+			sumPart2 += metadata
 		} else {
-			sum += valuesOfChild[metadata]
-
+			sumPart2 += valuesOfChild[metadata]
 		}
-		//}
-		i++
+		sumPart1 += metadata
 	}
 
-	return sum, i
-}
-
-func recursivePart1(numbers []int) (int, int) {
-	var numberOfChild = numbers[0]
-	var numberOfMeta = numbers[1]
-	var index = 2
-	var rest = numbers[index:]
-	var sum = 0
-	for i := 0; i < numberOfChild; i++ {
-		sumTmp, indexTmp := recursivePart1(rest)
-		sum += sumTmp
-		index += indexTmp
-		rest = numbers[index:]
-	}
-
-	var i = index
-	for i < index+numberOfMeta {
-		sum += numbers[i]
-		i++
-	}
-
-	return sum, i
+	return sumPart1, sumPart2, (startIndex + numberOfMeta)
 }
