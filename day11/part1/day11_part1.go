@@ -46,10 +46,5 @@ func getPowerColumn(x int, y int, serialNumber int) int {
 }
 
 func getPowerLevel(x int, y int, serialNumber int) int {
-	var rackID = x + 10
-	var powerLevel = (((rackID * y) + serialNumber) * rackID) / 100
-	if powerLevel > 9 {
-		powerLevel %= 10
-	}
-	return powerLevel - 5
+	return (((x+10)*y)+serialNumber)*(x+10)/100%10 - 5
 }
