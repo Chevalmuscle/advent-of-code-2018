@@ -53,14 +53,9 @@ func getPowerAddedSize(x int, y int, serialNumber int, squareSize int) int {
 
 func getPowerLevel(x int, y int, serialNumber int) int {
 	var rackID = x + 10
-	var number = ((rackID * y) + serialNumber) * rackID
-	var str = strconv.Itoa(number)
-	var powerLevel int
-	if len(str) > 2 {
-		hundredDigit, _ := strconv.Atoi(str[len(str)-3:])
-		powerLevel = hundredDigit / 100
-	} else {
-		powerLevel = 0
+	var powerLevel = (((rackID * y) + serialNumber) * rackID) / 100
+	if powerLevel > 9 {
+		powerLevel %= 10
 	}
 	return powerLevel - 5
 }
