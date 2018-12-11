@@ -1,34 +1,37 @@
-package day11
+package day11part1
 
 import (
 	"math"
 	"strconv"
 	"time"
 
-	"../utils"
+	"../../utils"
 )
+
+var maxSize = 300
 
 func coordinates(serialNumber int) string {
 	defer utils.TimeTaken(time.Now())
 
 	var corner string
-	var biggestPowerGrid int = math.MinInt64
+	var biggestPowerGrid = math.MinInt64
 
-	for y := 1; y <= 300-3; y++ {
+	for y := 1; y <= maxSize-3; y++ {
 		var firstColumn = getPowerColumn(1, y, serialNumber)
 		var secondColumn = getPowerColumn(2, y, serialNumber)
 		var thirdColumm = getPowerColumn(3, y, serialNumber)
-		for x := 1; x <= 300-3; x++ {
+
+		for x := 1; x <= maxSize-3; x++ {
 			var sum = firstColumn + secondColumn + thirdColumm
 
 			if sum > biggestPowerGrid {
 				biggestPowerGrid = sum
 				corner = strconv.Itoa(x-1) + "," + strconv.Itoa(y)
 			}
+
 			firstColumn = secondColumn
 			secondColumn = thirdColumm
 			thirdColumm = getPowerColumn(x+2, y, serialNumber)
-
 		}
 	}
 	return corner
@@ -48,11 +51,10 @@ func getPowerLevel(x int, y int, serialNumber int) int {
 	var str = strconv.Itoa(number)
 	var powerLevel int
 	if len(str) > 2 {
-		a, _ := strconv.Atoi(str[len(str)-3:])
-		powerLevel = a / 100
+		hundredDigit, _ := strconv.Atoi(str[len(str)-3:])
+		powerLevel = hundredDigit / 100
 	} else {
 		powerLevel = 0
 	}
-
 	return powerLevel - 5
 }
