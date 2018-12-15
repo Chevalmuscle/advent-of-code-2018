@@ -20,27 +20,23 @@ const (
 )
 
 type point struct{ x, y int }
-type value struct {
-	value    string
+type trackValue struct {
+	track    string
 	hasACart bool
 }
 
-type valueCart struct {
-	value         string
-	nextDirection string
-}
+type valueCart struct{ value, nextDirection string }
 
-var tracks map[point]value
+var tracks map[point]trackValue
 var carts map[point]valueCart
-
 var biggestX int
 var biggestY int
 
-func firstCrash(inputGraph []string) string {
+func firstCrash(inputGraph []string) (string, string) {
 	defer utils.TimeTaken(time.Now())
-	var firstCrashLocation string
 
-	tracks = make(map[point]value)
+	var firstCrashLocation string
+	tracks = make(map[point]trackValue)
 	carts = make(map[point]valueCart)
 
 	biggestY = len(inputGraph)
@@ -55,56 +51,79 @@ func firstCrash(inputGraph []string) string {
 			if isCart(currentCharacter) {
 				carts[currentPoint] = valueCart{value: currentCharacter, nextDirection: GOLEFT}
 				if currentCharacter == LEFT || currentCharacter == RIGHT {
-					tracks[currentPoint] = value{"-", true}
+					tracks[currentPoint] = trackValue{"-", true}
 				} else {
-					tracks[currentPoint] = value{"|", true}
+					tracks[currentPoint] = trackValue{"|", true}
 				}
 			} else if isIntersection(currentCharacter) {
-				tracks[currentPoint] = value{currentCharacter, false}
+				tracks[currentPoint] = trackValue{currentCharacter, false}
 			} else {
-				tracks[currentPoint] = value{currentCharacter, false}
+				tracks[currentPoint] = trackValue{currentCharacter, false}
 			}
 		}
 	}
 
-	for firstCrashLocation == "" {
+	for len(carts) > 1 {
+
 		newCarts := make(map[point]valueCart)
 
-		for pos, cart := range carts {
-			nextPos := nextPoint(pos, cart.value)
-			valueOfPos := tracks[pos]
-			valueOfPos.hasACart = false
-			tracks[pos] = valueOfPos
+		for y := 0; y < biggestY; y++ {
+			for x := 0; x < biggestX; x++ {
+				pos := point{x: x, y: y}
 
-			valueOfNextPos := tracks[nextPos]
-			if valueOfNextPos.hasACart == true {
-				firstCrashLocation = strconv.Itoa(nextPos.x) + "," + strconv.Itoa(nextPos.y)
-			} else {
-				valueOfNextPos.hasACart = true
-			}
-			if isIntersection(valueOfNextPos.value) {
-				cart.value = turn(cart.value, cart.nextDirection)
-				cart.iterateDirection()
-				newCarts[nextPos] = cart
-			} else if valueOfNextPos.value == "/" || valueOfNextPos.value == "\\" {
-				turnDirection := getTurn(cart.value, valueOfNextPos.value)
-				turnedCart := turn(cart.value, turnDirection)
-				cart.value = turnedCart
-				newCarts[nextPos] = cart
-			} else {
-				newCarts[nextPos] = cart
-			}
-			tracks[nextPos] = valueOfNextPos
+				if _, cartOnTrack := carts[pos]; cartOnTrack {
+					cart := carts[pos]
 
+					nextPos := nextPoint(pos, cart.value)
+					valueOfPos := tracks[pos]
+					valueOfPos.hasACart = false
+					tracks[pos] = valueOfPos
+
+					valueOfNextPos := tracks[nextPos]
+					if valueOfNextPos.hasACart == true {
+
+						if firstCrashLocation == "" {
+							firstCrashLocation = strconv.Itoa(nextPos.x) + "," + strconv.Itoa(nextPos.y)
+						}
+
+						delete(newCarts, nextPos)
+						delete(carts, nextPos)
+						valueOfNextPos.hasACart = false
+						tracks[nextPos] = valueOfNextPos
+
+					} else {
+						valueOfNextPos.hasACart = true
+						if isIntersection(valueOfNextPos.track) {
+							cart.value = turn(cart.value, cart.nextDirection)
+							cart.iterateDirection()
+							newCarts[nextPos] = cart
+						} else if valueOfNextPos.track == "/" || valueOfNextPos.track == "\\" {
+							turnDirection := getTurn(cart.value, valueOfNextPos.track)
+							turnedCart := turn(cart.value, turnDirection)
+							cart.value = turnedCart
+							newCarts[nextPos] = cart
+						} else {
+							newCarts[nextPos] = cart
+						}
+						tracks[nextPos] = valueOfNextPos
+					}
+
+				}
+			}
 		}
 		carts = newCarts
-		//printTracks()
 	}
 
-	return firstCrashLocation
+	var lastLocation string
+	for pos := range carts {
+		lastLocation = strconv.Itoa(pos.x) + "," + strconv.Itoa(pos.y)
+	}
+	//printTracks(carts)
+
+	return firstCrashLocation, lastLocation
 }
 
-func printTracks() {
+func printTracks(carts map[point]valueCart) {
 
 	for y := 0; y < biggestY; y++ {
 		for x := 0; x < biggestX; x++ {
@@ -113,7 +132,7 @@ func printTracks() {
 				myCart := carts[pos]
 				fmt.Print(myCart.value)
 			} else {
-				fmt.Print(tracks[pos].value)
+				fmt.Print(tracks[pos].track)
 			}
 		}
 		fmt.Println("")
