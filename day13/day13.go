@@ -1,7 +1,6 @@
 package day13
 
 import (
-	"fmt"
 	"log"
 	"strconv"
 	"time"
@@ -20,15 +19,14 @@ const (
 )
 
 type point struct{ x, y int }
-type trackValue struct {
-	track    string
+type cartState struct{ value, nextDirection string }
+type trackState struct {
+	value    string
 	hasACart bool
 }
 
-type valueCart struct{ value, nextDirection string }
-
-var tracks map[point]trackValue
-var carts map[point]valueCart
+var tracks map[point]trackState
+var carts map[point]cartState
 var biggestX int
 var biggestY int
 
@@ -36,12 +34,13 @@ func firstCrash(inputGraph []string) (string, string) {
 	defer utils.TimeTaken(time.Now())
 
 	var firstCrashLocation string
-	tracks = make(map[point]trackValue)
-	carts = make(map[point]valueCart)
+	tracks = make(map[point]trackState)
+	carts = make(map[point]cartState)
 
 	biggestY = len(inputGraph)
 	biggestX = len(inputGraph[0])
 
+	// parse the input
 	for y := 0; y < len(inputGraph); y++ {
 		currentLine := inputGraph[y]
 		for x := 0; x < len(currentLine); x++ {
@@ -49,116 +48,84 @@ func firstCrash(inputGraph []string) (string, string) {
 			currentPoint := point{x: x, y: y}
 			currentCharacter := string(currentLine[x])
 			if isCart(currentCharacter) {
-				carts[currentPoint] = valueCart{value: currentCharacter, nextDirection: GOLEFT}
+				carts[currentPoint] = cartState{value: currentCharacter, nextDirection: GOLEFT}
 				if currentCharacter == LEFT || currentCharacter == RIGHT {
-					tracks[currentPoint] = trackValue{"-", true}
+					tracks[currentPoint] = trackState{"-", true}
 				} else {
-					tracks[currentPoint] = trackValue{"|", true}
+					tracks[currentPoint] = trackState{"|", true}
 				}
 			} else if isIntersection(currentCharacter) {
-				tracks[currentPoint] = trackValue{currentCharacter, false}
+				tracks[currentPoint] = trackState{currentCharacter, false}
 			} else {
-				tracks[currentPoint] = trackValue{currentCharacter, false}
+				tracks[currentPoint] = trackState{currentCharacter, false}
 			}
 		}
 	}
 
+	// get these carts rollin
 	for len(carts) > 1 {
-
-		newCarts := make(map[point]valueCart)
+		newCarts := make(map[point]cartState)
 
 		for y := 0; y < biggestY; y++ {
 			for x := 0; x < biggestX; x++ {
 				pos := point{x: x, y: y}
 
-				if _, cartOnTrack := carts[pos]; cartOnTrack {
-					cart := carts[pos]
+				if _, cartIsOnTrack := carts[pos]; cartIsOnTrack {
 
-					nextPos := nextPoint(pos, cart.value)
-					valueOfPos := tracks[pos]
-					valueOfPos.hasACart = false
-					tracks[pos] = valueOfPos
+					currentCartState := carts[pos]
+					currentTrackValue := tracks[pos]
+					currentTrackValue.hasACart = false
+					tracks[pos] = currentTrackValue
 
-					valueOfNextPos := tracks[nextPos]
-					if valueOfNextPos.hasACart == true {
+					nextPos := nextPoint(pos, currentCartState.value)
+					nextTrackValue := tracks[nextPos]
 
+					if nextTrackValue.hasACart == true {
+						// CRASH !
 						if firstCrashLocation == "" {
 							firstCrashLocation = strconv.Itoa(nextPos.x) + "," + strconv.Itoa(nextPos.y)
 						}
-
 						delete(newCarts, nextPos)
 						delete(carts, nextPos)
-						valueOfNextPos.hasACart = false
-						tracks[nextPos] = valueOfNextPos
+						nextTrackValue.hasACart = false
 
 					} else {
-						valueOfNextPos.hasACart = true
-						if isIntersection(valueOfNextPos.track) {
-							cart.value = turn(cart.value, cart.nextDirection)
-							cart.iterateDirection()
-							newCarts[nextPos] = cart
-						} else if valueOfNextPos.track == "/" || valueOfNextPos.track == "\\" {
-							turnDirection := getTurn(cart.value, valueOfNextPos.track)
-							turnedCart := turn(cart.value, turnDirection)
-							cart.value = turnedCart
-							newCarts[nextPos] = cart
-						} else {
-							newCarts[nextPos] = cart
+						nextTrackValue.hasACart = true
+						if isIntersection(nextTrackValue.value) {
+							// crosses an intersection
+							currentCartState.value = turn(currentCartState.value, currentCartState.nextDirection)
+							currentCartState.iterateDirection()
+						} else if nextTrackValue.value == "/" || nextTrackValue.value == "\\" {
+							// has to turn
+							turnedCart := turn(currentCartState.value, getTurnDirection(currentCartState.value, nextTrackValue.value))
+							currentCartState.value = turnedCart
 						}
-						tracks[nextPos] = valueOfNextPos
-					}
+						newCarts[nextPos] = currentCartState
 
+					}
+					tracks[nextPos] = nextTrackValue
 				}
 			}
 		}
 		carts = newCarts
 	}
 
-	var lastLocation string
+	var lastCartLocation string
 	for pos := range carts {
-		lastLocation = strconv.Itoa(pos.x) + "," + strconv.Itoa(pos.y)
+		lastCartLocation = strconv.Itoa(pos.x) + "," + strconv.Itoa(pos.y)
 	}
-	//printTracks(carts)
 
-	return firstCrashLocation, lastLocation
+	return firstCrashLocation, lastCartLocation
 }
 
-func printTracks(carts map[point]valueCart) {
-
-	for y := 0; y < biggestY; y++ {
-		for x := 0; x < biggestX; x++ {
-			pos := point{x: x, y: y}
-			if _, hasACart := carts[pos]; hasACart {
-				myCart := carts[pos]
-				fmt.Print(myCart.value)
-			} else {
-				fmt.Print(tracks[pos].track)
-			}
-		}
-		fmt.Println("")
-	}
-}
-
-func getTurn(cart string, track string) string {
+func getTurnDirection(cart string, track string) string {
 	if cart == RIGHT && track == "\\" || cart == DOWN && track == "/" || cart == LEFT && track == "\\" || cart == UP && track == "/" {
 		return GORIGHT
 	} else if cart == RIGHT && track == "/" || cart == UP && track == "\\" || cart == LEFT && track == "/" || cart == DOWN && track == "\\" {
 		return GOLEFT
 	} else {
-		log.Fatal("error in getTurn(...)")
+		log.Fatal("error in getTurnDirection(...)")
 		return ""
-	}
-}
-
-func (v *valueCart) iterateDirection() {
-	if v.nextDirection == GOLEFT {
-		v.nextDirection = GOSTRAIGHT
-	} else if v.nextDirection == GOSTRAIGHT {
-		v.nextDirection = GORIGHT
-	} else if v.nextDirection == GORIGHT {
-		v.nextDirection = GOLEFT
-	} else {
-		log.Fatal("Next direction cannot be determined")
 	}
 }
 
@@ -185,6 +152,18 @@ func turn(cart string, direction string) string {
 		}
 	}
 	return cart
+}
+
+func (v *cartState) iterateDirection() {
+	if v.nextDirection == GOLEFT {
+		v.nextDirection = GOSTRAIGHT
+	} else if v.nextDirection == GOSTRAIGHT {
+		v.nextDirection = GORIGHT
+	} else if v.nextDirection == GORIGHT {
+		v.nextDirection = GOLEFT
+	} else {
+		log.Fatal("Next direction cannot be determined")
+	}
 }
 
 func nextPoint(currentPoint point, cart string) point {
