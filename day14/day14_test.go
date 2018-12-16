@@ -5,21 +5,32 @@ import (
 )
 
 func TestReceipes(t *testing.T) {
+	testReceipesPart1(t, 9, "5158916779")
+	testReceipesPart1(t, 5, "0124515891")
+	testReceipesPart1(t, 18, "9251071085")
+	testReceipesPart1(t, 2018, "5941429882")
 
-	testReceipes(t, 9, "5158916779")
-	testReceipes(t, 5, "0124515891")
-	testReceipes(t, 18, "9251071085")
-	testReceipes(t, 2018, "5941429882")
+	testReceipesPart2(t, 51589, 9)
+	testReceipesPart2(t, 92510, 18)
+	testReceipesPart2(t, 59414, 2018)
 
-	finalInput := 768071
-	testReceipes(t, finalInput, "6548103910")
+	// my input
+	testReceipesPart1(t, 768071, "6548103910")
+	testReceipesPart2(t, 768071, 20198090)
 }
 
-func testReceipes(t *testing.T, input int, expected string) {
-
-	output := recipes(input)
+func testReceipesPart1(t *testing.T, input int, expected string) {
+	output := recipesPart1(input)
 
 	if output != expected {
 		t.Errorf("testReceipes part 1 was incorrect, got: %v, want: %v", output, expected)
+	}
+}
+
+func testReceipesPart2(t *testing.T, input int, expected int) {
+	output := recipesPart2(input)
+
+	if output != expected {
+		t.Errorf("testReceipes part 2 was incorrect, got: %v, want: %v", output, expected)
 	}
 }
