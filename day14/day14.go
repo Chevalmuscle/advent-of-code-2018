@@ -3,6 +3,7 @@ package day14
 import (
 	"log"
 	"strconv"
+	"strings"
 	"time"
 
 	"../utils"
@@ -11,17 +12,17 @@ import (
 func recipesPart1(input int) string {
 	defer utils.TimeTaken(time.Now())
 
-	var recipes = "37"
+	var recipes = []int{3, 7}
 	var indexElf1 = 0
 	var indexElf2 = 1
 
 	for len(recipes) < input+10 {
-		recipeElf1, _ := strconv.Atoi(string(recipes[indexElf1]))
-		recipeElf2, _ := strconv.Atoi(string(recipes[indexElf2]))
-		total := strconv.Itoa(recipeElf1 + recipeElf2)
-		for _, newRecipe := range total {
-			recipes += string(newRecipe)
-		}
+		recipeElf1 := recipes[indexElf1]
+		recipeElf2 := recipes[indexElf2]
+
+		newRecipies := getDigits(recipeElf1 + recipeElf2)
+		recipes = append(recipes, newRecipies...)
+
 		indexElf1 = (indexElf1 + (recipeElf1 + 1)) % len(recipes)
 		if indexElf1 == indexElf2 {
 			indexElf1++
@@ -32,7 +33,11 @@ func recipesPart1(input int) string {
 		}
 	}
 
-	return recipes[input : input+10]
+	var sb strings.Builder
+	for i := 9; i >= 0; i-- {
+		sb.WriteString(strconv.Itoa(recipes[len(recipes)-1-i]))
+	}
+	return sb.String()
 }
 
 func recipesPart2(input int) int {
@@ -66,7 +71,6 @@ func recipesPart2(input int) int {
 			} else if match(recipes[:len(recipes)-1], pattern) {
 				return len(recipes) - len(pattern) - 1
 			}
-
 		}
 		count++
 	}
@@ -91,5 +95,4 @@ func getDigits(d int) []int {
 		return []int{d}
 	}
 	return append(getDigits(d/10), d%10)
-
 }

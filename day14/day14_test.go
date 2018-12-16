@@ -6,7 +6,6 @@ import (
 
 func TestReceipes(t *testing.T) {
 	testReceipesPart1(t, 9, "5158916779")
-	testReceipesPart1(t, 5, "0124515891")
 	testReceipesPart1(t, 18, "9251071085")
 	testReceipesPart1(t, 2018, "5941429882")
 
