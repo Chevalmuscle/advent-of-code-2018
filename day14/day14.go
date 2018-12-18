@@ -24,13 +24,7 @@ func recipesPart1(input int) string {
 		recipes = append(recipes, newRecipies...)
 
 		indexElf1 = (indexElf1 + (recipeElf1 + 1)) % len(recipes)
-		if indexElf1 == indexElf2 {
-			indexElf1++
-		}
 		indexElf2 = (indexElf2 + (recipeElf2 + 1)) % len(recipes)
-		if indexElf2 == indexElf1 {
-			indexElf2++
-		}
 	}
 
 	var sb strings.Builder
@@ -57,13 +51,7 @@ func recipesPart2(input int) int {
 		recipes = append(recipes, newRecipies...)
 
 		indexElf1 = (indexElf1 + (recipeElf1 + 1)) % len(recipes)
-		if indexElf1 == indexElf2 {
-			indexElf1++
-		}
 		indexElf2 = (indexElf2 + (recipeElf2 + 1)) % len(recipes)
-		if indexElf2 == indexElf1 {
-			indexElf2++
-		}
 
 		if len(pattern) < len(recipes) {
 			if match(recipes, pattern) {
